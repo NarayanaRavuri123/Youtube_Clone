@@ -29,12 +29,19 @@ stages:
     pool:
       vmimage: 'ubuntu-latest'
     steps:
-      - task: AzureRmWebAppDeployment@5
-        inputs:
-          ConnectionType: 'AzureRM'
-          azureSubscription: 'AzureConnection'
-          appType: 'webAppLinux'
-          WebAppName: 'NarayanaHosting'
-          packageForLinux: '$(System.DefaultWorkingDirectory)/build'
-          RuntimeStack: 'STATICSITE|1.0'
-          DeploymentTypeLinux: 'oneDeploy'
+    - task: DownloadBuildArtifacts@1
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(System.ArtifactsDirectory)'
+
+    - task: AzureRmWebAppDeployment@5
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'AzureConnection'
+        appType: 'webAppLinux'
+        WebAppName: 'NarayanaHosting'
+        packageForLinux: '$(System.ArtifactsDirectory)/drop'
+        RuntimeStack: 'STATICSITE|1.0'
+        DeploymentTypeLinux: 'oneDeploy'
