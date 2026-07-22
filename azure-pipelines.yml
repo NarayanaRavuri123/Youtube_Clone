@@ -35,5 +35,5 @@ steps:
   inputs:
     azureSubscription: AzureConnection
     appType: webAppLinux
-    appName: react-demo-webapp
+    appName: NarayanaHosting
     package: $(Build.ArtifactStagingDirectory)/react.zip
