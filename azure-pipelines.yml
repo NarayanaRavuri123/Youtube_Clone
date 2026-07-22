@@ -1,35 +1,39 @@
-jobs:
-- job: Job_1
-  displayName: Agent job 1
-  pool:
-    vmImage: ubuntu-latest
+trigger: 
+- main
 
-  steps:
-  - checkout: self
-    fetchDepth: 1
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      vmimage: 'ubuntu-latest'
+    steps:
+    - task: Npm@1
+      inputs:
+        command: 'install'
 
-  - task: Npm@1
-    displayName: npm install
-    inputs:
-      verbose: false
+    - task: Npm@1
+      inputs:
+        command: 'run build'
 
-  - task: Npm@1
-    displayName: npm build
-    inputs:
-      command: custom
-      verbose: false
-      customCommand: run build
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: 'build'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
-    inputs:
-      PathtoPublish: build
-
-  - task: AzureRmWebAppDeployment@4
-    displayName: 'Azure App Service Deploy: NarayanaHosting'
-    inputs:
-      azureSubscription: AzureConnection
-      WebAppKind: webAppLinux
-      WebAppName: NarayanaHosting
-      Package: $(System.DefaultWorkingDirectory)/build
-      RuntimeStack: STATICSITE|1.0
+- stage: Deploy
+  jobs:
+  - job: Deploy
+    pool:
+      vmimage: 'ubuntu-latest'
+    steps:
+      - task: AzureRmWebAppDeployment@5
+        inputs:
+          ConnectionType: 'AzureRM'
+          azureSubscription: 'AzureConnection'
+          appType: 'webAppLinux'
+          WebAppName: 'NarayanaHosting'
+          packageForLinux: '$(System.DefaultWorkingDirectory)/build'
+          RuntimeStack: 'STATICSITE|1.0'
+          DeploymentTypeLinux: 'oneDeploy'
